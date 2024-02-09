@@ -39,7 +39,7 @@ import numpy as np
 import sys
 import warnings
 
-def HA(df, ohlc=['Open', 'High', 'Low', 'Close']):
+def HA(df, ohlc=None):
     """
     Function to compute Heiken Ashi Candles (HA)
 
@@ -54,6 +54,7 @@ def HA(df, ohlc=['Open', 'High', 'Low', 'Close']):
             Heiken Ashi High (HA_$ohlc[1])
             Heiken Ashi Low (HA_$ohlc[2])
     """
+    ohlc = ['Open', 'High', 'Low', 'Close'] if ohlc is None else ohlc
 
     ha_open = 'HA_' + ohlc[0]
     ha_high = 'HA_' + ohlc[1]
@@ -143,7 +144,7 @@ def EMA(df, base, target, period, alpha=False):
     return df
 
 
-def ATR(df, period, ohlc=['Open', 'High', 'Low', 'Close']):
+def ATR(df, period, ohlc=None):
     """
     Function to compute Average True Range (ATR)
 
@@ -157,6 +158,7 @@ def ATR(df, period, ohlc=['Open', 'High', 'Low', 'Close']):
             True Range (TR)
             ATR (ATR_$period)
     """
+    ohlc = ['Open', 'High', 'Low', 'Close'] if ohlc is None else ohlc
     atr = 'ATR_' + str(period)
 
     # Compute true range only if it is not computed and stored earlier in the df
@@ -175,7 +177,7 @@ def ATR(df, period, ohlc=['Open', 'High', 'Low', 'Close']):
     return df
 
 
-def SuperTrend(df, period, multiplier, ohlc=['open', 'high', 'low', 'close']):
+def SuperTrend(df, period, multiplier, ohlc=None):
     """
     Function to compute SuperTrend
 
@@ -191,6 +193,7 @@ def SuperTrend(df, period, multiplier, ohlc=['open', 'high', 'low', 'close']):
             SuperTrend (ST_$period_$multiplier)
             SuperTrend Direction (STX_$period_$multiplier)
     """
+    ohlc = ['open', 'high', 'low', 'close'] if ohlc is None else ohlc
 
     ATR(df, period, ohlc=ohlc)
     atr = 'ATR_' + str(period)
@@ -361,7 +364,7 @@ def RSI(df, base="Close", period=21):
     return df
 
 
-def Ichimoku(df, ohlc=['Open', 'High', 'Low', 'Close'], param=[9, 26, 52, 26]):
+def Ichimoku(df, ohlc=None, param=None):
     """
     Function to compute Ichimoku Cloud parameter (Ichimoku)
 
@@ -373,6 +376,8 @@ def Ichimoku(df, ohlc=['Open', 'High', 'Low', 'Close'], param=[9, 26, 52, 26]):
     Returns :
         df : Pandas DataFrame with new columns added for ['Tenkan Sen', 'Kijun Sen', 'Senkou Span A', 'Senkou Span B', 'Chikou Span']
     """
+    ohlc = ['Open', 'High', 'Low', 'Close'] if ohlc is None else ohlc
+    param = [9, 26, 52, 26] if param is None else param
 
     high = df[ohlc[1]]
     low = df[ohlc[2]]

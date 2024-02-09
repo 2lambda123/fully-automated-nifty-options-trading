@@ -164,7 +164,8 @@ def create_basket():
     return True
 def name_to_price(stock_name):
     return re.sub(' ','',re.sub('[A-Z]','',stock_name[stock_name.find('w')+6:]))
-def add_instruments_basket(stock_names,market=True,qty=50,overnight=True,buy_sell=['buy','sell']):
+def add_instruments_basket(stock_names,market=True,qty=50,overnight=True,buy_sell=None):
+    buy_sell = ['buy','sell'] if buy_sell is None else buy_sell
     create_basket()
     co=0
     for stock_name in stock_names:
@@ -191,7 +192,8 @@ def add_instruments_basket(stock_names,market=True,qty=50,overnight=True,buy_sel
         co+=1
         driver.find_element_by_xpath('/html/body/div[1]/form/section/footer/div[2]/button[1]/span').click()
     return True
-def check_margin(stock_names,market=True,overnight=True,close=True,buy_sell=['buy','sell']):
+def check_margin(stock_names,market=True,overnight=True,close=True,buy_sell=None):
+    buy_sell = ['buy','sell'] if buy_sell is None else buy_sell
     global qty
     add_instruments_basket(stock_names,market,qty,overnight,buy_sell)
     sleep(2)
