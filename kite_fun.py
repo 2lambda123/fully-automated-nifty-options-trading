@@ -1,4 +1,21 @@
 def thursday():
+    """Function: thursday()
+    Parameters:
+        - None
+    Returns:
+        - thismonth (list): List of dates falling on a Thursday in the current month.
+        - nextmonth (list): List of dates falling on a Thursday in the next month.
+    Processing Logic:
+        - Gets the current year using datetime module.
+        - Creates a TextCalendar object for Thursdays.
+        - Iterates through the current and next month to find all Thursdays.
+        - Adds the dates to respective lists.
+        - Filters out dates that have already passed in the current month.
+        - Returns the lists of dates falling on Thursdays in the current and next month.
+    Example:
+        - Input: None
+        - Output: ([6, 13, 20, 27], [3, 10, 17, 24, 31])"""
+    
     now=datetime.datetime.now()
     Year=now.year
     A=calendar.TextCalendar(calendar.THURSDAY)
@@ -21,6 +38,21 @@ def thursday():
     return thismonth,nextmonth
 
 def option_names(strike_price,ceorpe):
+    """Returns a list of option names for a given strike price and call/put type.
+    Parameters:
+        - strike_price (int): The strike price for the option.
+        - ceorpe (str): The type of option, either 'CE' for call or 'PE' for put.
+    Returns:
+        - list: A list of option names in the format 'NIFTY {expiry date} {strike price} {ceorpe}'.
+    Processing Logic:
+        - Generates the expiry dates for the current and next month.
+        - Converts the current date to uppercase and adds it to the option names.
+        - Adds the strike price and call/put type to the option names.
+        - Combines the option names for the current and next month.
+    Example:
+        >>> option_names(15000, 'CE')
+        ['NIFTY 3rd w JUL 15000 CE', 'NIFTY 8th w JUL 15000 CE', 'NIFTY 15th w JUL 15000 CE', 'NIFTY 22nd w JUL 15000 CE', 'NIFTY JUL 15000 CE', 'NIFTY 5th w AUG 15000 CE', 'NIFTY 12th w AUG 15000 CE', 'NIFTY 19th w AUG 15000 CE', 'NIFTY 26th w AUG 15000 CE', 'NIFTY AUG 15000 CE']"""
+    
     thismonth,nextmonth=thursday()
     now=datetime.datetime.now()
     this=now.strftime('%b').upper()
@@ -40,9 +72,28 @@ def option_names(strike_price,ceorpe):
     return this_name
 
 def select_strike_price(ltp):
+    """"Returns the nearest strike price for a given last traded price (ltp)."
+    Parameters:
+        - ltp (float): The last traded price of the security.
+    Returns:
+        - float: The nearest strike price for the given ltp.
+    Processing Logic:
+        - Rounds the ltp to the nearest multiple of 50.
+        - Used for selecting strike prices for options trading."""
+    
     return round(ltp/50)*50
 
 def open_positions():
+    """Returns a dictionary of open positions from the provided data.
+    Parameters:
+        - bb (dict): A dictionary containing position data.
+    Returns:
+        - open_pos (dict): A dictionary of open positions.
+    Processing Logic:
+        - Extracts open positions from provided data.
+        - Excludes positions with product type 'CNC'.
+        - Excludes positions with quantity of 0."""
+    
     bb=z.get_position()
     open_pos=dict()
     try:
@@ -56,6 +107,17 @@ def open_positions():
         pass      
     return open_pos
 def is_option_active():
+    """Checks if there are any active options in the open positions list.
+    Parameters:
+        - None
+    Returns:
+        - bool: True if there are active options, False otherwise.
+    Processing Logic:
+        - Checks if there are any active options.
+        - Uses the global variable open_positions_list.
+        - Returns True if there are active options.
+        - Returns False if there are no active options."""
+    
     try:
         global open_positions_list
         #o=open_positions().keys()
@@ -69,6 +131,20 @@ def is_option_active():
     return False        
 
 def check_target(target=0.8):
+    """Checks if the current open positions have reached the target profit percentage.
+    Parameters:
+        - target (float): The target profit percentage to be reached. Default value is 0.8.
+    Returns:
+        - bool: True if any open position has reached the target profit percentage, False otherwise.
+    Processing Logic:
+        - Loop through all open positions.
+        - Skip the 'totalpandl' position.
+        - Check if the quantity is negative.
+        - If yes, compare the average price with the current market price.
+        - If the average price is greater than the current market price by more than the target percentage, return True.
+        - If not, return False.
+        - If no open position has reached the target percentage, return False."""
+    
     global open_positions_list
     open_pos=open_positions_list
     #open_pos=open_positions()
@@ -85,6 +161,20 @@ def check_target(target=0.8):
     return False      
 
 def new_positions():
+    """"This function calculates new positions for a trading strategy based on the current trend and market conditions."
+    Parameters:
+        - old_trend (str): The previous trend of the market, either 'up' or 'down'.
+        - data (pandas.DataFrame): The data used to make the trading decision.
+    Returns:
+        - None: This function does not return any value, it only places orders.
+    Processing Logic:
+        - If the old trend is 'down', the function calculates the strike prices for the options to sell and buy based on the current market price and risk level.
+        - If the current day is a Wednesday or Thursday, the function selects the second strike price, otherwise it selects the first strike price.
+        - The function then places a buy order for 50 contracts and a sell order for 50 contracts.
+        - If the old trend is 'up', the function calculates the strike prices for the options to sell and buy based on the current market price and risk level.
+        - If the current day is a Wednesday or Thursday, the function selects the second strike price, otherwise it selects the first strike price.
+        - The function then places a buy order for 50 contracts and a sell order for 50 contracts."""
+    
     if (old_trend=='down') :
 
         if int(now.strftime('%w'))>2 and int(now.strftime('%w'))<4:
@@ -111,6 +201,19 @@ def new_positions():
         #sleep(1)
 
 def less_risk(risk):
+    """Function to calculate the value of u that minimizes the absolute difference between u and half of the given risk value.
+    Parameters:
+        - risk (int or float): The risk value to be used in the calculation.
+    Returns:
+        - u (int or float): The value of u that minimizes the absolute difference between u and half of the given risk value.
+    Processing Logic:
+        - Create an empty list u.
+        - Create a range from 1 to 100 and append each value multiplied by 50 to the list u.
+        - Convert the list u into a numpy array.
+        - Calculate the absolute difference between each value in u and half of the given risk value.
+        - Find the index of the minimum value in the list of absolute differences.
+        - Return the value of u at the index found in the previous step."""
+    
     u=[]
     for i in range(1,100):
         u.append(50*i)
@@ -121,6 +224,19 @@ def less_risk(risk):
     return u[np.argmin(yy)]
 
 def get_sleep_time():
+    """Returns the next run time for a task to be executed.
+    Parameters:
+        - None
+    Returns:
+        - datetime: The next run time for the task.
+    Processing Logic:
+        - Get current time.
+        - Round down to nearest 5 minutes.
+        - Add 5 minutes.
+        - Return the next run time.
+    Example:
+        get_sleep_time() # Returns 2021-09-29 13:05:00"""
+    
     now = datetime.datetime.now()
     next_run = now.replace(minute=int(now.minute / 5) * 5, second=0, microsecond=0) + datetime.timedelta(minutes=5)
     return next_run
@@ -133,6 +249,17 @@ else:
 overbought_or_oversold='oversold'
 
 def create_basket():
+    """Creates a new basket in the Zerodha trading platform.
+    Parameters:
+        - None
+    Returns:
+        - bool: True if the basket is successfully created, False otherwise.
+    Processing Logic:
+        - Clicks on the 'Create Basket' button.
+        - Enters the name of the new basket.
+        - Clicks on the 'Create' button.
+        - Retries if there is an error while creating the basket."""
+    
     global new_basket_name
     if driver.current_url!='https://kite.zerodha.com/orders/baskets':
         driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div[2]/div[1]/a[2]/span').click()
@@ -156,8 +283,40 @@ def create_basket():
             break    
     return True
 def name_to_price(stock_name):
+    """"Converts a stock name to its corresponding price.
+    Parameters:
+        - stock_name (str): The name of the stock to be converted.
+    Returns:
+        - float: The price of the stock.
+    Processing Logic:
+        - Removes any spaces from the stock name.
+        - Removes any capital letters from the stock name.
+        - Finds the price within the stock name.
+        - Returns the price as a float value.
+    Example:
+        >>> name_to_price('AAPLw2020 High')
+        2020.0""""
+    
     return re.sub(' ','',re.sub('[A-Z]','',stock_name[stock_name.find('w')+6:]))
 def add_instruments_basket(stock_names,market=True,qty=50,overnight=True,buy_sell=None):
+    """Adds a basket of instruments to the trading platform.
+    Parameters:
+        - stock_names (list): List of stock names to be added to the basket.
+        - market (bool): Optional parameter to select market order. Default is True.
+        - qty (int): Optional parameter to specify the quantity of each stock to be added. Default is 50.
+        - overnight (bool): Optional parameter to select overnight order. Default is True.
+        - buy_sell (list): Optional parameter to specify the buy/sell action for each stock. Default is None.
+    Returns:
+        - bool: True if the basket is successfully added.
+    Processing Logic:
+        - Clicks on buttons to create a basket and add instruments.
+        - Searches for the stock name and selects it.
+        - Selects market order if specified.
+        - Clears the quantity input and enters the specified quantity.
+        - Selects overnight order if specified.
+        - Selects buy/sell action if specified.
+        - Clicks on button to add the instrument to the basket."""
+    
     buy_sell = ['buy','sell'] if buy_sell is None else buy_sell
     try:
         driver.find_element_by_xpath('/html/body/div[1]/form/section/footer/div[2]/button[2]').click()
@@ -199,6 +358,8 @@ def add_instruments_basket(stock_names,market=True,qty=50,overnight=True,buy_sel
         #driver.find_element_by_xpath('/html/body/div[1]/form/section/footer/div[2]/button[2]').click()
     return True
 def check_margin(stock_names,market=True,overnight=True,close=True,buy_sell=None):
+    """"""
+    
     buy_sell = ['buy','sell'] if buy_sell is None else buy_sell
     global qty
     add_instruments_basket(stock_names,market,qty,overnight,buy_sell)
@@ -217,6 +378,8 @@ def check_margin(stock_names,market=True,overnight=True,close=True,buy_sell=None
     return margin
 
 def check_max_loss(stock_names,market=True,qty=qty,overnight=True,resistance=False):
+    """"""
+    
     try:
         #stock_names=[symbol_buy,symbol_sell]
         margin=check_margin(stock_names,market=True,overnight=True,close=False)
@@ -269,6 +432,8 @@ def check_max_loss(stock_names,market=True,qty=qty,overnight=True,resistance=Fal
         #driver.find_element_by_xpath('/html/body/div[1]/div[6]/div/div/div[3]/div/button').click()
 
 def basket_order(stock_names):
+    """"""
+    
     print(colored(f'Trying to place the following orders {stock_names}',color='yellow'))
     margin=z.get_margins()
     fund= margin['equity']['Available margin']
@@ -299,6 +464,8 @@ def basket_order(stock_names):
     return True  
 
 def clean_basket(all=False):
+    """"""
+    
     global new_basket_name
     u=['/html/body/div[1]/div[1]/div/div[2]/div[1]/a[2]/span','/html/body/div[1]/div[2]/div[2]/div[1]/a[3]/span']
     for i in u:
@@ -334,6 +501,8 @@ def clean_basket(all=False):
     return True
 
 def get_strike_price(old_trend, new_trend,ce_or_pe,next=False,risk=risk):
+    """"""
+    
     if old_trend=='down' and new_trend=='up':                        
         if (int(now.strftime('%w'))>=2 and int(now.strftime('%w'))<4) or next==True:
             symbol_sell=option_names(strike_price=select_strike_price(data.iloc[-2]['close']),ceorpe=ce_or_pe)[1]
@@ -350,6 +519,8 @@ def get_strike_price(old_trend, new_trend,ce_or_pe,next=False,risk=risk):
             symbol_buy=option_names(strike_price=select_strike_price(data.iloc[-2]['close'])+risk,ceorpe=ce_or_pe)[0]
     return [symbol_buy,symbol_sell]   
 def get_best_strike_price(old_trend,new_trend):
+    """"""
+    
     global uptrend_ce_or_pe
     global downtrend_ce_or_pe
     if old_trend=='down' and new_trend=='up':  
@@ -359,6 +530,8 @@ def get_best_strike_price(old_trend,new_trend):
     return get_strike_price(old_trend,new_trend,ceorpe)           
 
 def best_option_selection(next=False,resistance_up=False,resistance_down=False,risk=risk):
+    """"""
+    
     global uptrend_ce_or_pe
     global downtrend_ce_or_pe
     global qty
@@ -398,6 +571,8 @@ def best_option_selection(next=False,resistance_up=False,resistance_down=False,r
             qty_check(margin=margin_down_pe['required_margin'])
     return uptrend_ce_or_pe,downtrend_ce_or_pe   
 def refresh_every(count):
+    """"""
+    
     global how_refresh_every
     if count/how_refresh_every==round(count/how_refresh_every):
         return True
